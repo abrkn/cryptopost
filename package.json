@@ -1,0 +1,14 @@
+{
+  "name": "cryptopost",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:abrkn/cryptopost.git",
+  "author": "Andreas Brekken <andreas@brekken.com>",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "superagent": "3.8.2"
+  },
+  "devDependencies": {
+    "prettier": "1.10.2"
+  }
+}
