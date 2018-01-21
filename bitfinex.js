@@ -22,14 +22,23 @@ const createBitfinexClient = (apiKey, apiSecret) => {
       .update(payload)
       .digest('hex');
 
-    const response = await request
+    const requestPromise = request
       .post(completeURL)
       .set('X-BFX-APIKEY', apiKey)
       .set('X-BFX-PAYLOAD', payload)
       .set('X-BFX-SIGNATURE', signature)
       .send(JSON.stringify(body));
 
-    return response.body;
+    try {
+      const response = await requestPromise;
+      return response.body;
+    } catch (error) {
+      if (error.response) {
+        console.error('Bitfinex request failed:');
+        console.error(error.response.body);
+      }
+      throw error;
+    }
   };
 };
 
