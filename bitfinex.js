@@ -1,6 +1,7 @@
 // From https://bitfinex.readme.io/v1/docs/rest-auth
 const request = require('superagent');
 const crypto = require('crypto');
+const { get } = require('lodash');
 
 const baseUrl = 'https://api.bitfinex.com';
 
@@ -33,10 +34,12 @@ const createBitfinexClient = (apiKey, apiSecret) => {
       const response = await requestPromise;
       return response.body;
     } catch (error) {
-      if (error.response) {
-        console.error('Bitfinex request failed:');
-        console.error(error.response.body);
+      const theirMessage = get(error, 'response.body.message');
+
+      if (theirMessage) {
+        console.error(`Bitfinex request failed: ${theirMessage}`);
       }
+
       throw error;
     }
   };
