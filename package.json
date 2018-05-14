@@ -6,6 +6,7 @@
   "author": "Andreas Brekken <andreas@brekken.com>",
   "license": "UNLICENSED",
   "dependencies": {
+    "babel-plugin-transform-object-rest-spread": "6.26.0",
     "lodash": "4.17.5",
     "superagent": "3.8.2",
     "superagent-use": "0.1.0",
