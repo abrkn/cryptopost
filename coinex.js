@@ -36,7 +36,7 @@ const wrapResponseError = error => {
 };
 
 const parseResponse = response => {
-  const { body } = response;
+  const body = Object.keys(response.body).length ? response.body : JSON.parse(response.text);
   const { code, message } = body;
 
   if (code) {
@@ -83,8 +83,10 @@ const createCoinexClient = (apiKey, apiSecret) => {
       .digest('hex')
       .toUpperCase();
 
+    const separator = completeUrl.includes('?') ? '&' : '?';
+
     const requestPromise = request
-      .get(completeUrl + '?' + bodyAsQueryString)
+      .get(completeUrl + separator + bodyAsQueryString)
       .set('authorization', signature)
       .set('User-Agent', USER_AGENT);
 
