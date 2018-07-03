@@ -24,7 +24,7 @@ const createBitmexClient = (apiKey, apiSecret) => {
       .set('api-expires', expires)
       .set('api-key', apiKey)
       .set('api-signature', signature)
-      .set('user-agent', 'PnL Updater - Helix Capital - https://helix.capital');
+      .set('user-agent', 'Helix Capital - https://helix.capital');
 
     let response;
 
