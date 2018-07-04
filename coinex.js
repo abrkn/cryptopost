@@ -18,20 +18,24 @@ const wrapResponseError = error => {
   const { body } = error.response;
 
   if (!body) {
-    const wrapped = new Error(`Coinex: ${error.response.status} ${error.response.text}. See response field of error.`);
-    wrapped.inner = error;
-    wrapped.response = error.response;
-    wrapped.stack = error.stack;
+    const wrapped = Object.assign(new Error(`Coinex: ${error.response.status} ${error.response.text}. See response field of error.`), {
+      inner: error,
+      response: error.response,
+      stack: error.stack
+    });
+
     throw wrapped;
   }
 
   const { code, message } = body;
   assert(code, `Code: ${code}`);
 
-  const wrapped = new Error(`Coinex: ${code} ${message}. See coinex field of error.`);
-  wrapped.respose = error.response;
-  wrapped.stack = error.stack;
-  wrapped.coinex = body;
+  const wrapped = Object.assign(new Error(`Coinex: ${code} ${message}. See coinex field of error.`), {
+    response: error.response,
+    stack: error.stack,
+    coinex: body,
+  });
+
   throw wrapped;
 };
 
