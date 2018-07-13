@@ -11,6 +11,9 @@ const baseUrl = 'https://api.coinex.com/v1';
 const USER_AGENT =
   'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36';
 
+const maybeAddProxy = _ =>
+  process.env.HTTP_PROXY ? _.proxy(process.env.HTTP_PROXY) : _;
+
 const wrapResponseError = error => {
   if (!error.response) {
     throw error;
@@ -104,11 +107,12 @@ const createCoinexClient = (apiKey, apiSecret) => {
 
     const separator = completeUrl.includes('?') ? '&' : '?';
 
-    const requestPromise = request
-      .get(completeUrl + separator + bodyAsQueryString)
-      .set('authorization', signature)
-      .set('User-Agent', USER_AGENT)
-      .proxy(process.env.HTTP_PROXY);
+    const requestPromise = maybeAddProxy(
+      request
+        .get(completeUrl + separator + bodyAsQueryString)
+        .set('authorization', signature)
+        .set('User-Agent', USER_AGENT)
+    );
 
     return requestPromise.then(parseResponse, wrapResponseError);
   };
@@ -147,12 +151,14 @@ const createCoinexClient = (apiKey, apiSecret) => {
       .digest('hex')
       .toUpperCase();
 
-    const requestPromise = request
-      .post(completeUrl)
-      .send(bodySorted)
-      .set('authorization', signature)
-      .set('User-Agent', USER_AGENT)
-      .proxy(process.env.HTTP_PROXY);
+    const requestPromise = maybeAddProxy(
+      request
+        .post(completeUrl)
+        .send(bodySorted)
+        .set('authorization', signature)
+        .set('User-Agent', USER_AGENT)
+        .proxy(process.env.HTTP_PROXY)
+    );
 
     return requestPromise.then(parseResponse, wrapResponseError);
   };
