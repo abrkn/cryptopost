@@ -3,7 +3,6 @@ const assert = require('assert');
 const request = require('superagent');
 const crypto = require('crypto');
 const querystring = require('querystring');
-const { get } = require('lodash');
 
 require('superagent-proxy')(request);
 
