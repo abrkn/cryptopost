@@ -5,6 +5,8 @@ const crypto = require('crypto');
 const querystring = require('querystring');
 const { get } = require('lodash');
 
+require('superagent-proxy')(request);
+
 const baseUrl = 'https://api.coinex.com/v1';
 
 const USER_AGENT =
@@ -92,7 +94,8 @@ const createCoinexClient = (apiKey, apiSecret) => {
     const requestPromise = request
       .get(completeUrl + separator + bodyAsQueryString)
       .set('authorization', signature)
-      .set('User-Agent', USER_AGENT);
+      .set('User-Agent', USER_AGENT)
+      .proxy(process.env.HTTP_PROXY);
 
     return requestPromise.then(parseResponse, wrapResponseError);
   };
@@ -135,7 +138,8 @@ const createCoinexClient = (apiKey, apiSecret) => {
       .post(completeUrl)
       .send(bodySorted)
       .set('authorization', signature)
-      .set('User-Agent', USER_AGENT);
+      .set('User-Agent', USER_AGENT)
+      .proxy(process.env.HTTP_PROXY);
 
     return requestPromise.then(parseResponse, wrapResponseError);
   };

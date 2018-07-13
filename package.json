@@ -9,6 +9,7 @@
     "babel-plugin-transform-object-rest-spread": "6.26.0",
     "lodash": "4.17.5",
     "superagent": "3.8.2",
+    "superagent-proxy": "1.0.3",
     "superagent-use": "0.1.0",
     "superagent-verbose-errors": "1.0.1"
   },
