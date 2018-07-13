@@ -20,11 +20,18 @@ const wrapResponseError = error => {
   const { body } = error.response;
 
   if (!body) {
-    const wrapped = Object.assign(new Error(`Coinex: ${error.response.status} ${error.response.text}. See response field of error.`), {
-      inner: error,
-      response: error.response,
-      stack: error.stack
-    });
+    const wrapped = Object.assign(
+      new Error(
+        `Coinex: ${error.response.status} ${
+          error.response.text
+        }. See response field of error.`
+      ),
+      {
+        inner: error,
+        response: error.response,
+        stack: error.stack,
+      }
+    );
 
     throw wrapped;
   }
@@ -32,21 +39,28 @@ const wrapResponseError = error => {
   const { code, message } = body;
   assert(code, `Code: ${code}`);
 
-  const wrapped = Object.assign(new Error(`Coinex: ${code} ${message}. See coinex field of error.`), {
-    response: error.response,
-    stack: error.stack,
-    coinex: body,
-  });
+  const wrapped = Object.assign(
+    new Error(`Coinex: ${code} ${message}. See coinex field of error.`),
+    {
+      response: error.response,
+      stack: error.stack,
+      coinex: body,
+    }
+  );
 
   throw wrapped;
 };
 
 const parseResponse = response => {
-  const body = Object.keys(response.body).length ? response.body : JSON.parse(response.text);
+  const body = Object.keys(response.body).length
+    ? response.body
+    : JSON.parse(response.text);
   const { code, message } = body;
 
   if (code) {
-    const wrapped = new Error(`Coinex: ${code} ${message}. See coinex field of error`);
+    const wrapped = new Error(
+      `Coinex: ${code} ${message}. See coinex field of error`
+    );
     wrapped.coinex = body;
     throw wrapped;
   }
