@@ -36,9 +36,13 @@ const wrapResponseError = error => {
     throw error;
   }
 
-  const { body } = error.response;
-
   const status = error.status || '<none>';
+
+  let body;
+
+  try {
+    body = JSON.parse(error.response.text);
+  } catch (error) {}
 
   if (!body) {
     const text = error.response.text || '<none>';
@@ -49,7 +53,6 @@ const wrapResponseError = error => {
         inner: error,
         response: error.response,
         status,
-        stack: error.stack,
       }
     );
 
@@ -64,7 +67,6 @@ const wrapResponseError = error => {
     ),
     {
       response: error.response,
-      stack: error.stack,
       status,
       coinex: body,
     }
