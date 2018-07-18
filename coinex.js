@@ -3,6 +3,7 @@ const assert = require('assert');
 const request = require('superagent');
 const crypto = require('crypto');
 const querystring = require('querystring');
+const { get } = require('lodash');
 
 require('superagent-proxy')(request);
 
@@ -14,6 +15,22 @@ const USER_AGENT =
 const maybeAddProxy = _ =>
   process.env.HTTP_PROXY ? _.proxy(process.env.HTTP_PROXY) : _;
 
+const ok = _ => {
+  if (!_.ok) {
+    return false;
+  }
+
+  let body;
+
+  try {
+    body = JSON.parse(_.text);
+  } catch (error) {
+    return false;
+  }
+
+  return body && body.code === 0;
+};
+
 const wrapResponseError = error => {
   if (!error.response) {
     throw error;
@@ -21,16 +38,17 @@ const wrapResponseError = error => {
 
   const { body } = error.response;
 
+  const status = error.status || '<none>';
+
   if (!body) {
+    const text = error.response.text || '<none>';
+
     const wrapped = Object.assign(
-      new Error(
-        `Coinex: ${error.response.status} ${
-          error.response.text
-        }. See response field of error.`
-      ),
+      new Error(`Coinex error. Status=${status}; Text=${text}`),
       {
         inner: error,
         response: error.response,
+        status,
         stack: error.stack,
       }
     );
@@ -38,36 +56,21 @@ const wrapResponseError = error => {
     throw wrapped;
   }
 
-  const { code, message } = body;
-  assert(code, `Code: ${code}`);
+  const { code = '<none>', message = '<none>' } = body;
 
   const wrapped = Object.assign(
-    new Error(`Coinex: ${code} ${message}. See coinex field of error.`),
+    new Error(
+      `Coinex error. Code=${code}; Status=${status} Message=${message}`
+    ),
     {
       response: error.response,
       stack: error.stack,
+      status,
       coinex: body,
     }
   );
 
   throw wrapped;
-};
-
-const parseResponse = response => {
-  const body = Object.keys(response.body).length
-    ? response.body
-    : JSON.parse(response.text);
-  const { code, message } = body;
-
-  if (code) {
-    const wrapped = new Error(
-      `Coinex: ${code} ${message}. See coinex field of error`
-    );
-    wrapped.coinex = body;
-    throw wrapped;
-  }
-
-  return body.data;
 };
 
 const createCoinexClient = (apiKey, apiSecret) => {
@@ -107,14 +110,14 @@ const createCoinexClient = (apiKey, apiSecret) => {
 
     const separator = completeUrl.includes('?') ? '&' : '?';
 
-    const requestPromise = maybeAddProxy(
+    return maybeAddProxy(
       request
         .get(completeUrl + separator + bodyAsQueryString)
         .set('authorization', signature)
         .set('User-Agent', USER_AGENT)
-    );
-
-    return requestPromise.then(parseResponse, wrapResponseError);
+        .accept('application/json')
+        .ok(ok)
+    ).then(_ => JSON.parse(_.text).data, wrapResponseError);
   };
 
   const coinexPost = async (path, fields = {}) => {
@@ -151,16 +154,15 @@ const createCoinexClient = (apiKey, apiSecret) => {
       .digest('hex')
       .toUpperCase();
 
-    const requestPromise = maybeAddProxy(
+    return maybeAddProxy(
       request
         .post(completeUrl)
         .send(bodySorted)
         .set('authorization', signature)
         .set('User-Agent', USER_AGENT)
-        .proxy(process.env.HTTP_PROXY)
-    );
-
-    return requestPromise.then(parseResponse, wrapResponseError);
+        .accept('application/json')
+        .ok(ok)
+    ).then(_ => JSON.parse(_.text).data, wrapResponseError);
   };
 
   return { get: coinexGet, post: coinexPost };
