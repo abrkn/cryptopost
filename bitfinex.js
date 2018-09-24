@@ -14,13 +14,15 @@ const createBitfinexClient = (...args) => {
     const nonce = Date.now().toString();
     const completeURL = baseUrl + url;
 
-    const body = {
+    const requestBody = {
       request: url,
       nonce,
       ...fields,
     };
 
-    const payload = new Buffer(JSON.stringify(body)).toString('base64');
+    const requestBodyStringified = JSON.stringify(requestBody);
+
+    const requestBodyEncoded = new Buffer(requestBodyStringified).toString('base64');
 
     const [apiKey, apiSecret] = nextKeyPair();
     assert(apiKey);
@@ -28,18 +30,46 @@ const createBitfinexClient = (...args) => {
 
     const signature = crypto
       .createHmac('sha384', apiSecret)
-      .update(payload)
+      .update(requestBodyEncoded)
       .digest('hex');
 
     const requestPromise = superagent
       .post(completeURL)
       .set('X-BFX-APIKEY', apiKey)
-      .set('X-BFX-PAYLOAD', payload)
+      .set('X-BFX-PAYLOAD', requestBodyEncoded)
       .set('X-BFX-SIGNATURE', signature)
-      .send(JSON.stringify(body));
+      .send(requestBodyStringified);
 
     const response = await requestPromise;
-    return response.body;
+
+    const { body } = response;
+    assert(body, `body missing from response: ${response.text}`);
+
+    // Certain responses (like deposit, withdraw) have a result field, which is
+    // set to either "success" or "error"
+    if (body.result !== undefined) {
+      if (body.result === 'error') {
+        let message;
+
+        // address	[string]	The deposit address (or error message if result = “error”)
+        // https://docs.bitfinex.com/v1/reference#rest-auth-deposit
+        if (url === '/v1/deposit/new') {
+          message = body.address;
+        } else {
+          message = body.message;
+        }
+
+        if (!message) {
+          message = JSON.stringify(body);
+        }
+
+        throw new Error(`Request failed (result equals error): ${message}`);
+      } else if (body.result !== 'success') {
+        throw new Error(`Unexpected result field value, "${body.result}"`);
+      }
+    }
+
+    return body;
   };
 };
 
