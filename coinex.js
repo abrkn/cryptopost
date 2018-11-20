@@ -12,8 +12,7 @@ const baseUrl = 'https://api.coinex.com/v1';
 const USER_AGENT =
   'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36';
 
-const maybeAddProxy = _ =>
-  process.env.HTTP_PROXY ? _.proxy(process.env.HTTP_PROXY) : _;
+const maybeAddProxy = _ => (process.env.HTTP_PROXY ? _.proxy(process.env.HTTP_PROXY) : _);
 
 const ok = _ => {
   if (!_.ok) {
@@ -47,30 +46,22 @@ const wrapResponseError = error => {
   if (!body) {
     const text = error.response.text || '<none>';
 
-    const wrapped = Object.assign(
-      new Error(`Coinex error. Status=${status}; Text=${text}`),
-      {
-        inner: error,
-        response: error.response,
-        status,
-      }
-    );
+    const wrapped = Object.assign(new Error(`Coinex error. Status=${status}; Text=${text}`), {
+      inner: error,
+      response: error.response,
+      status,
+    });
 
     throw wrapped;
   }
 
   const { code = '<none>', message = '<none>' } = body;
 
-  const wrapped = Object.assign(
-    new Error(
-      `Coinex error. Code=${code}; Status=${status} Message=${message}`
-    ),
-    {
-      response: error.response,
-      status,
-      coinex: body,
-    }
-  );
+  const wrapped = Object.assign(new Error(`Coinex error. Code=${code}; Status=${status} Message=${message}`), {
+    response: error.response,
+    status,
+    coinex: body,
+  });
 
   throw wrapped;
 };
@@ -101,8 +92,7 @@ const createCoinexClient = (apiKey, apiSecret) => {
 
     const bodyAsQueryString = querystring.stringify(bodySorted);
 
-    const bodyAsQueryStringWithSecret =
-      bodyAsQueryString + '&secret_key=' + apiSecret;
+    const bodyAsQueryStringWithSecret = bodyAsQueryString + '&secret_key=' + apiSecret;
 
     const signature = crypto
       .createHash('md5')
@@ -147,8 +137,7 @@ const createCoinexClient = (apiKey, apiSecret) => {
 
     const bodyAsQueryString = querystring.stringify(bodySorted);
 
-    const bodyAsQueryStringWithSecret =
-      bodyAsQueryString + '&secret_key=' + apiSecret;
+    const bodyAsQueryStringWithSecret = bodyAsQueryString + '&secret_key=' + apiSecret;
 
     const signature = crypto
       .createHash('md5')
