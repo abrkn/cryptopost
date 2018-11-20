@@ -67,7 +67,7 @@ const wrapResponseError = error => {
 };
 
 const createCoinexClient = (apiKey, apiSecret) => {
-  const coinexGet = async (path, fields = {}) => {
+  const coinexGet = async (path, fields = {}, method = 'GET') => {
     assert(path, 'path is required');
 
     const tonce = Date.now().toString();
@@ -102,9 +102,10 @@ const createCoinexClient = (apiKey, apiSecret) => {
 
     const separator = completeUrl.includes('?') ? '&' : '?';
 
+    const methodLowerCase = method.toLowerCase();
+
     return maybeAddProxy(
-      request
-        .get(completeUrl + separator + bodyAsQueryString)
+      request[methodLowerCase](completeUrl + separator + bodyAsQueryString)
         .set('authorization', signature)
         .set('User-Agent', USER_AGENT)
         .accept('application/json')
