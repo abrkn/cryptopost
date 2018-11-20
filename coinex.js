@@ -122,7 +122,7 @@ const createCoinexClient = (apiKey, apiSecret) => {
     ).then(_ => JSON.parse(_.text).data, wrapResponseError);
   };
 
-  const coinexPost = async (path, fields = {}) => {
+  const coinexPost = async (path, fields = {}, method = 'POST') => {
     assert(path, 'path is required');
 
     const tonce = Date.now().toString();
@@ -156,9 +156,10 @@ const createCoinexClient = (apiKey, apiSecret) => {
       .digest('hex')
       .toUpperCase();
 
+    const methodLowerCase = method.toLowerCase();
+
     return maybeAddProxy(
-      request
-        .post(completeUrl)
+      request[methodLowerCase](completeUrl)
         .send(bodySorted)
         .set('authorization', signature)
         .set('User-Agent', USER_AGENT)
