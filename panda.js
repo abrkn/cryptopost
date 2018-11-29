@@ -10,15 +10,20 @@ const baseUrl = 'https://api.panda.exchange';
 
 const maybeAddProxy = _ => (process.env.HTTP_PROXY ? _.proxy(process.env.HTTP_PROXY) : _);
 
-const ok = _ => {
-  if (!_.ok) {
+const ok = res => {
+  if (!res.ok) {
     return false;
+  }
+
+  // TODO: Make sure 204, 201, etc. Or just check Content-Length.
+  if (!res.text) {
+    return true;
   }
 
   let body;
 
   try {
-    body = JSON.parse(_.text);
+    body = JSON.parse(res.text);
   } catch (error) {
     return false;
   }
